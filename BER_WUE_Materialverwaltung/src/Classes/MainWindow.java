@@ -52,7 +52,12 @@ public class MainWindow extends JFrame {
 		
 		JButton createMaterial = new JButton("Material bearbeiten");
 		createMaterial.addActionListener(e -> {
-			createMaterial();
+			try {
+				createMaterial();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		});
 		
 		JButton createStoragePoint = new JButton("Fahrzeugplatz bearbeiten");
@@ -87,12 +92,12 @@ public class MainWindow extends JFrame {
 	}
 
 	private void createStoragePoint() {
-		//FahrzeugDto selected = (FahrzeugDto) fahrzeugCombo.getSelectedItem();
-		String selected = (String) fahrzeugCombo.getSelectedItem();
+		FahrzeugDto selected = (FahrzeugDto) fahrzeugCombo.getSelectedItem();
+		//String selected = (String) fahrzeugCombo.getSelectedItem();
 		
 	}
 
-	private void createMaterial() {
+	private void createMaterial() throws SQLException {
 		
 		WindowCreateMaterial CreateMat = new WindowCreateMaterial();
 		CreateMat.setVisible(true);

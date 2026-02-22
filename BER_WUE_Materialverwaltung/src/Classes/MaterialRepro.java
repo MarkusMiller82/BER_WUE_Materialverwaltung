@@ -12,7 +12,7 @@ import javax.swing.table.DefaultTableModel;
 
 public class MaterialRepro {
 
-	private static final String SQL_FIND_ALL = "SELECT id, \"Materialbezeichnung\" FROM \"Material\" ORDER BY \"Materialbezeichnung\"";
+	private static final String SQL_FIND_ALL = "SELECT id, \"materialbezeichnung\" FROM \"material\" ORDER BY \"materialbezeichnung\"";
 
 	public List<MaterialDto> findAll() throws SQLException {
 		List<MaterialDto> list = new ArrayList<>();
@@ -29,37 +29,56 @@ public class MaterialRepro {
 		}
 		return list;
 	}
-	
+
 	public void modifyMaterial(JTable table, int row) throws SQLException {
-		
+
 		DefaultTableModel model = (DefaultTableModel) table.getModel();
 
-		String sql =
-		        "INSERT INTO \"Material\" (\"ID\", \"Materialbezeichnung\") " +
-		        "VALUES (?, ?) " +
-		        "ON CONFLICT (\"ID\") DO UPDATE SET " +
-		        "\"Materialbezeichnung\" = EXCLUDED.\"Materialbezeichnung\"";
+		Integer id = (Integer) model.getValueAt(row, 0);
+		String material = (String) model.getValueAt(row, 1);
 
-		    try (Connection con = DbUtil.getConnection();
-		         PreparedStatement ps = con.prepareStatement(sql)) {
+		try (Connection con = DbUtil.getConnection()) {
 
-		        
-		            int  id = (int) model.getValueAt(row, 0);
-		            String material = (String) model.getValueAt(row, 1);
+			if (id == null) {
+				// NEUER DATENSATZ → ID wird automatisch erzeugt
+				String insertSql = "INSERT INTO \"material\" (\"materialbezeichnung\") "
+						+ "VALUES (?) RETURNING \"id\"";
 
-		            // ID kann null sein → dann INSERT ohne ID
-		            if (id == 0) {
-		                ps.setNull(1, java.sql.Types.INTEGER);
-		            } else {
-		                ps.setInt(1, (int) id);
-		            }
+				try (PreparedStatement ps = con.prepareStatement(insertSql)) {
+					ps.setString(1, material);
 
-		            ps.setString(2, material);
+					ResultSet rs = ps.executeQuery();
+					if (rs.next()) {
+						int newId = rs.getInt(1);
+						model.setValueAt(newId, row, 0); // ID zurück in JTable
+					}
+				}
 
-		            ps.executeUpdate();
-		        }
-		    
+			} else {
+				// BESTEHENDER DATENSATZ → UPDATE statt UPSERT
+				String updateSql = "UPDATE \"material\" SET \"materialbezeichnung\" = ? " + "WHERE \"id\" = ?";
+
+				try (PreparedStatement ps = con.prepareStatement(updateSql)) {
+					ps.setString(1, material);
+					ps.setInt(2, id);
+					ps.executeUpdate();
+				}
+			}
+		}
 	}
 
-	
+	public void deleteMaterial(List<Integer> deletedIds) throws SQLException {
+
+		String deleteSql = "DELETE FROM \"material\" WHERE \"id\" = ?";
+
+		try (Connection con = DbUtil.getConnection(); PreparedStatement ps = con.prepareStatement(deleteSql)) {
+
+			for (Integer id : deletedIds) {
+				ps.setInt(1, id);
+				ps.executeUpdate();
+			}
+		}
+
+	}
+
 }
