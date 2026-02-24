@@ -48,6 +48,7 @@ public class WindowStartCheck extends JFrame {
 		EditableColumnRenderer renderer = new EditableColumnRenderer();
 
 		JTable tableCheck = new JTable(model);
+		TableStyler.applyHoverEffect(tableCheck);
 		for (int i = 0; i < tableCheck.getColumnCount(); i++) {
 			tableCheck.getColumnModel().getColumn(i).setCellRenderer(renderer);
 		}

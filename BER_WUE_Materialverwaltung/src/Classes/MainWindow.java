@@ -7,36 +7,30 @@ import java.util.List;
 
 public class MainWindow extends JFrame {
 
-	//DB Fehler.
+	// DB Fehler.
 	private final JComboBox<FahrzeugDto> fahrzeugCombo = new JComboBox<>();
 	private final FahrzeugRepro FahrzeugRepro = new FahrzeugRepro();
 	// Mock
 	String[] fahrzeuge = { "RK WÜ 71/70", "RK WÜ 54/46/1", "RK WÜ 54/14/1" };
-	//private final JComboBox<String> fahrzeugCombo = new JComboBox<>(fahrzeuge);
-
+	// private final JComboBox<String> fahrzeugCombo = new JComboBox<>(fahrzeuge);
 
 	public void startWindow() {
 		// Titel des Fensters
 		setTitle("Fahrzeugauswahl");
 		// Größe des Fensters
-		setSize(600, 600);
+		setSize(800, 600);
 		// Programm beenden, wenn das Fenster geschlossen wird
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		// Fenster in der Bildschirmmitte anzeigen
 		setLocationRelativeTo(null);
 
-		
 		setLayout(new BorderLayout());
-
-
-		JComboBox<String> comboFahrzeuge = new JComboBox<>(fahrzeuge);
 
 		Dimension pref = fahrzeugCombo.getPreferredSize();
 		fahrzeugCombo.setPreferredSize(new Dimension(150, pref.height));
 
 		JButton ButtonChoose = new JButton("Auswahl bestätigen");
 
-		
 		ButtonChoose.addActionListener(e -> HandleButtonChoose());
 
 		JPanel contentLeft = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -49,7 +43,7 @@ public class MainWindow extends JFrame {
 
 		// pack(); // ideale Fenstergröße
 		// Fenster sichtbar machen
-		
+
 		JButton createMaterial = new JButton("Material bearbeiten");
 		createMaterial.addActionListener(e -> {
 			try {
@@ -59,21 +53,36 @@ public class MainWindow extends JFrame {
 				e1.printStackTrace();
 			}
 		});
-		
+
 		JButton createStoragePoint = new JButton("Fahrzeugplatz bearbeiten");
-		createMaterial.addActionListener(e -> {
-			createStoragePoint();
+		createStoragePoint.addActionListener(e -> {
+			try {
+				createStoragePoint();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		});
-		
+
 		JButton createVehicle = new JButton("Fahrzeug bearbeiten");
-		createMaterial.addActionListener(e -> {
-			createVehicle();
+		createVehicle.addActionListener(e -> {
+			try {
+				createVehicle();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		});
-		
+
+		JButton createCheckPoints = new JButton("Stammsatz für Check erzeugen");
+		createVehicle.addActionListener(e -> {
+			createCheckPoints();
+		});
+
 		footerPanel.add(createMaterial);
 		footerPanel.add(createStoragePoint);
 		footerPanel.add(createVehicle);
-
+		footerPanel.add(createCheckPoints);
 
 		add(contentLeft, BorderLayout.NORTH);
 		add(footerPanel, BorderLayout.SOUTH);
@@ -81,41 +90,64 @@ public class MainWindow extends JFrame {
 
 		// DB Fehler daher mit mock
 		// DB
-		fahrzeugCombo.setPrototypeDisplayValue(new FahrzeugDto(0, "XXXX"));
+		fahrzeugCombo.setPrototypeDisplayValue(new FahrzeugDto(0, "XXXX", "", ""));
 		loadFahrzeugeAsync();
 
 	}
 
-	private void createVehicle() {
-		
-		
+	private void createCheckPoints() {
+		FahrzeugDto selected = (FahrzeugDto) fahrzeugCombo.getSelectedItem();
+
+		if (selected.getRufname() == null || selected.getRufname().isBlank()) {
+			JOptionPane.showMessageDialog(null, "Der Rufname darf nicht leer sein.", "Eingabefehler",
+					JOptionPane.ERROR_MESSAGE);
+		} else {
+			// View Rufen dafür
+		}
+
 	}
 
-	private void createStoragePoint() {
+	private void createVehicle() throws SQLException {
+		WindowCreateVehicle CreateVeh = new WindowCreateVehicle();
+
+		CreateVeh.setVisible(true);
+
+	}
+
+	private void createStoragePoint() throws SQLException {
 		FahrzeugDto selected = (FahrzeugDto) fahrzeugCombo.getSelectedItem();
-		//String selected = (String) fahrzeugCombo.getSelectedItem();
-		
+
+		if (selected.getRufname() == null || selected.getRufname().isBlank()) {
+			JOptionPane.showMessageDialog(null, "Der Rufname darf nicht leer sein.", "Eingabefehler",
+					JOptionPane.ERROR_MESSAGE);
+		} else {
+			WindowCreateStorage createStore = new WindowCreateStorage(selected.getRufname());
+			createStore.setVisible(true);
+		}
 	}
 
 	private void createMaterial() throws SQLException {
-		
+
 		WindowCreateMaterial CreateMat = new WindowCreateMaterial();
 		CreateMat.setVisible(true);
 	}
 
 	private void HandleButtonChoose() {
-		
-		//FahrzeugDto selected = (FahrzeugDto) fahrzeugCombo.getSelectedItem();
-		String selected = (String) fahrzeugCombo.getSelectedItem();
 
-		WindowVehChoose winVeh = new WindowVehChoose(selected);
+		FahrzeugDto selected = (FahrzeugDto) fahrzeugCombo.getSelectedItem();
+		// String selected = (String) fahrzeugCombo.getSelectedItem();
+
+		String rufname = selected.getRufname();
+
+		WindowVehChoose winVeh = new WindowVehChoose(rufname);
 		winVeh.setVisible(true);
 	}
 
 	private void loadFahrzeugeAsync() {
 		fahrzeugCombo.setEnabled(false);
-		fahrzeugCombo.setModel(new DefaultComboBoxModel<>(new FahrzeugDto[] { new FahrzeugDto(-1, "Lade Daten....") }));
-		
+		fahrzeugCombo.setModel(
+				new DefaultComboBoxModel<>(new FahrzeugDto[] { new FahrzeugDto(-1, "Lade Daten....", "", "") }));
+
 		new SwingWorker<DefaultComboBoxModel<FahrzeugDto>, Void>() {
 			@Override
 			protected DefaultComboBoxModel<FahrzeugDto> doInBackground() throws Exception {
@@ -134,8 +166,9 @@ public class MainWindow extends JFrame {
 					ex.printStackTrace();
 					JOptionPane.showMessageDialog(MainWindow.this, "Fehler beim Laden: " + ex.getMessage(), "DB-Fehler",
 							JOptionPane.ERROR_MESSAGE);
-					//fahrzeugCombo.setModel(
-					//		new DefaultComboBoxModel<>(new FahrzeugDto[] { new FahrzeugDto(-1, "<Fehler>") }));
+					// fahrzeugCombo.setModel(
+					// new DefaultComboBoxModel<>(new FahrzeugDto[] { new FahrzeugDto(-1,
+					// "<Fehler>") }));
 				} finally {
 					fahrzeugCombo.setEnabled(true);
 				}

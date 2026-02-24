@@ -28,6 +28,7 @@ public class WindowVehChoose extends JFrame {
 		model.addRow(new Object[] { "RK Wü 71/70", "Akrinor", "Rucksack RTW", "31.01.2026" });
 
 		JTable table = new JTable(model);
+		TableStyler.applyHoverEffect(table);
 		JScrollPane scrollPane = new JScrollPane(table);
 
 		add(scrollPane, BorderLayout.CENTER);

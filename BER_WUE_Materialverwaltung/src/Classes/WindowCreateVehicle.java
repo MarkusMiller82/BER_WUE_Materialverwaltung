@@ -2,7 +2,6 @@ package Classes;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,61 +14,52 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-public class WindowCreateMaterial extends JFrame {
+public class WindowCreateVehicle extends JFrame {
 
 	private List<Integer> deletedIds = new ArrayList<>();
 
-	public WindowCreateMaterial() throws SQLException {
+	public WindowCreateVehicle() throws SQLException {
 
-		setTitle("Material bearbeiten");
+		setTitle("Fahrzeug bearbeiten");
 		setSize(1000, 600);
 
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-		String[] columnNames = { "id", "Materialbezeichnung" };
+		String[] columnNames = { "id", "Rufname", "Bezeichnung", "Typ" };
 
 		DefaultTableModel model = new DefaultTableModel(columnNames, 0);
 
-		// mock
-		/*
-		 * model.addRow(new Object[] { 1, "Verbandspäckchen groß" }); model.addRow(new
-		 * Object[] { 2, "Verbandspäckchen klein" }); model.addRow(new Object[] { 3,
-		 * "Akrinor" });
-		 */
-
 		model.setRowCount(0);
-		MaterialRepro materialrepro = new MaterialRepro();
+		FahrzeugRepro fahrzeugrepro = new FahrzeugRepro();
 
-		List<MaterialDto> listAll = materialrepro.findAll();
+		List<FahrzeugDto> listAll = fahrzeugrepro.findAll();
 
-		for (MaterialDto dto : listAll) {
+		for (FahrzeugDto dto : listAll) {
 			model.addRow(new Object[] { dto.getId(), // Integer oder null
-					dto.getMaterialbezeichnung() // String
-			});
+					dto.getRufname(), dto.getBezeichnung(), dto.getTyp() });
 		}
 
 		EditableColumnRenderer renderer = new EditableColumnRenderer();
 
-		JTable tableMaterial = new JTable(model);
-		TableStyler.applyHoverEffect(tableMaterial);
-		for (int i = 0; i < tableMaterial.getColumnCount(); i++) {
-			tableMaterial.getColumnModel().getColumn(i).setCellRenderer(renderer);
+		JTable tableVehicle = new JTable(model);
+		TableStyler.applyHoverEffect(tableVehicle);
+		for (int i = 0; i < tableVehicle.getColumnCount(); i++) {
+			tableVehicle.getColumnModel().getColumn(i).setCellRenderer(renderer);
 		}
 
-		tableMaterial.getColumnModel().getColumn(0).setMinWidth(0);
-		tableMaterial.getColumnModel().getColumn(0).setMaxWidth(0);
-		tableMaterial.getColumnModel().getColumn(0).setWidth(0);
-		tableMaterial.getColumnModel().getColumn(0).setPreferredWidth(0);
+		tableVehicle.getColumnModel().getColumn(0).setMinWidth(0);
+		tableVehicle.getColumnModel().getColumn(0).setMaxWidth(0);
+		tableVehicle.getColumnModel().getColumn(0).setWidth(0);
+		tableVehicle.getColumnModel().getColumn(0).setPreferredWidth(0);
 
 		JButton addButton = new JButton("Neue Zeile");
 
 		addButton.addActionListener(e -> {
 			model.addRow(new Object[] { null, // ID (unsichtbar)
-					"", // Materialbezeichnung
-			});
+					"", "", "" });
 		});
 
-		JScrollPane scrollPane = new JScrollPane(tableMaterial);
+		JScrollPane scrollPane = new JScrollPane(tableVehicle);
 		add(scrollPane, BorderLayout.CENTER);
 
 		JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -77,12 +67,13 @@ public class WindowCreateMaterial extends JFrame {
 		JButton saveMaterialTab = new JButton("Speichern");
 		saveMaterialTab.addActionListener(e -> {
 			try {
-				saveMaterial(tableMaterial);
+				saveVehicle(tableVehicle);
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		});
+
 		JButton back = new JButton("Schließen");
 		back.addActionListener(e -> {
 			dispose(); // schließt das aktuelle Fenster
@@ -90,7 +81,12 @@ public class WindowCreateMaterial extends JFrame {
 
 		JButton deleteButton = new JButton("Löschen");
 		deleteButton.addActionListener(e -> {
-			deleteMaterial(tableMaterial);
+			try {
+				deleteVehicle(tableVehicle);
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		});
 
 		footerPanel.add(addButton);
@@ -104,15 +100,16 @@ public class WindowCreateMaterial extends JFrame {
 
 	}
 
-	private void deleteMaterial(JTable tableMaterial) {
-		int row = tableMaterial.getSelectedRow();
+	private void deleteVehicle(JTable tableVehicle) throws SQLException {
+
+		int row = tableVehicle.getSelectedRow();
 
 		if (row == -1) {
 			JOptionPane.showMessageDialog(null, "Bitte eine Zeile auswählen.");
 			return;
 		}
 
-		DefaultTableModel model = (DefaultTableModel) tableMaterial.getModel();
+		DefaultTableModel model = (DefaultTableModel) tableVehicle.getModel();
 
 		// ID aus der Tabelle holen
 		Object idObj = model.getValueAt(row, 0);
@@ -125,31 +122,33 @@ public class WindowCreateMaterial extends JFrame {
 
 		// Zeile aus der Tabelle entfernen
 		model.removeRow(row);
-
 	}
 
-	private void saveMaterial(JTable tableMaterial) throws SQLException {
-		if (tableMaterial.isEditing()) {
-			tableMaterial.getCellEditor().stopCellEditing();
+	private void saveVehicle(JTable tableVehicle) throws SQLException {
+
+		if (tableVehicle.isEditing()) {
+			tableVehicle.getCellEditor().stopCellEditing();
 		}
 
-		List<MaterialDto> list = new ArrayList<>();
-		DefaultTableModel model = (DefaultTableModel) tableMaterial.getModel();
+		List<FahrzeugDto> list = new ArrayList<>();
+		DefaultTableModel model = (DefaultTableModel) tableVehicle.getModel();
 
-		MaterialRepro materialRepro = new MaterialRepro();
+		FahrzeugRepro fahrzeugRepro = new FahrzeugRepro();
 
 		if (!deletedIds.isEmpty()) {
-			materialRepro.deleteMaterial(deletedIds);
+			fahrzeugRepro.deleteVehicle(deletedIds);
 		}
 
 		for (int row = 0; row < model.getRowCount(); row++) {
 
 			// Mock
-			materialRepro.modifyMaterial(tableMaterial, row);
+			fahrzeugRepro.modifyVehicle(tableVehicle, row);
 
 			Integer id = (Integer) model.getValueAt(row, 0);
-			String bezeichnung = (String) model.getValueAt(row, 1);
-			list.add(new MaterialDto(id, bezeichnung));
+			String bezeichnung = (String) model.getValueAt(row, 2);
+			String typ = (String) model.getValueAt(row, 3);
+			String rufname = (String) model.getValueAt(row, 1);
+			list.add(new FahrzeugDto(id, rufname, bezeichnung, typ));
 
 			System.out.println(id);
 			System.out.println(bezeichnung);

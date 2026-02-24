@@ -2,7 +2,6 @@ package Classes;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,61 +14,59 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-public class WindowCreateMaterial extends JFrame {
+public class WindowCreateStorage extends JFrame {
 
 	private List<Integer> deletedIds = new ArrayList<>();
 
-	public WindowCreateMaterial() throws SQLException {
+	public WindowCreateStorage(String rufname) throws SQLException {
 
-		setTitle("Material bearbeiten");
+		String title = "Fahrzeuglagerort anlegen für" + rufname;
+		setTitle(title);
 		setSize(1000, 600);
 
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-		String[] columnNames = { "id", "Materialbezeichnung" };
+		String[] columnNames = { "id", "Lagerort", "Rufname" };
 
-		DefaultTableModel model = new DefaultTableModel(columnNames, 0);
-
-		// mock
-		/*
-		 * model.addRow(new Object[] { 1, "Verbandspäckchen groß" }); model.addRow(new
-		 * Object[] { 2, "Verbandspäckchen klein" }); model.addRow(new Object[] { 3,
-		 * "Akrinor" });
-		 */
+		DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
+		
+		public boolean isCellEditable(int row, int column) {
+			return column != 0 && column != 3;
+		}
+	};
 
 		model.setRowCount(0);
-		MaterialRepro materialrepro = new MaterialRepro();
+		LagerortRepro lagerortRepro = new LagerortRepro();
 
-		List<MaterialDto> listAll = materialrepro.findAll();
+		List<LagerortDto> listAll = lagerortRepro.findAll(rufname);
 
-		for (MaterialDto dto : listAll) {
+		for (LagerortDto dto : listAll) {
 			model.addRow(new Object[] { dto.getId(), // Integer oder null
-					dto.getMaterialbezeichnung() // String
-			});
+					dto.getLagerort(), 
+					dto.getRufname()});
 		}
 
 		EditableColumnRenderer renderer = new EditableColumnRenderer();
 
-		JTable tableMaterial = new JTable(model);
-		TableStyler.applyHoverEffect(tableMaterial);
-		for (int i = 0; i < tableMaterial.getColumnCount(); i++) {
-			tableMaterial.getColumnModel().getColumn(i).setCellRenderer(renderer);
+		JTable tableStorage = new JTable(model);
+		TableStyler.applyHoverEffect(tableStorage);
+		for (int i = 0; i < tableStorage.getColumnCount(); i++) {
+			tableStorage.getColumnModel().getColumn(i).setCellRenderer(renderer);
 		}
 
-		tableMaterial.getColumnModel().getColumn(0).setMinWidth(0);
-		tableMaterial.getColumnModel().getColumn(0).setMaxWidth(0);
-		tableMaterial.getColumnModel().getColumn(0).setWidth(0);
-		tableMaterial.getColumnModel().getColumn(0).setPreferredWidth(0);
+		tableStorage.getColumnModel().getColumn(0).setMinWidth(0);
+		tableStorage.getColumnModel().getColumn(0).setMaxWidth(0);
+		tableStorage.getColumnModel().getColumn(0).setWidth(0);
+		tableStorage.getColumnModel().getColumn(0).setPreferredWidth(0);
 
 		JButton addButton = new JButton("Neue Zeile");
 
 		addButton.addActionListener(e -> {
 			model.addRow(new Object[] { null, // ID (unsichtbar)
-					"", // Materialbezeichnung
-			});
+					"",rufname  });
 		});
 
-		JScrollPane scrollPane = new JScrollPane(tableMaterial);
+		JScrollPane scrollPane = new JScrollPane(tableStorage);
 		add(scrollPane, BorderLayout.CENTER);
 
 		JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -77,12 +74,13 @@ public class WindowCreateMaterial extends JFrame {
 		JButton saveMaterialTab = new JButton("Speichern");
 		saveMaterialTab.addActionListener(e -> {
 			try {
-				saveMaterial(tableMaterial);
+				saveStorage(tableStorage);
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		});
+
 		JButton back = new JButton("Schließen");
 		back.addActionListener(e -> {
 			dispose(); // schließt das aktuelle Fenster
@@ -90,7 +88,12 @@ public class WindowCreateMaterial extends JFrame {
 
 		JButton deleteButton = new JButton("Löschen");
 		deleteButton.addActionListener(e -> {
-			deleteMaterial(tableMaterial);
+			try {
+				deleteStorage(tableStorage);
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		});
 
 		footerPanel.add(addButton);
@@ -104,15 +107,16 @@ public class WindowCreateMaterial extends JFrame {
 
 	}
 
-	private void deleteMaterial(JTable tableMaterial) {
-		int row = tableMaterial.getSelectedRow();
+	private void deleteStorage(JTable tableStore) throws SQLException {
+
+		int row = tableStore.getSelectedRow();
 
 		if (row == -1) {
 			JOptionPane.showMessageDialog(null, "Bitte eine Zeile auswählen.");
 			return;
 		}
 
-		DefaultTableModel model = (DefaultTableModel) tableMaterial.getModel();
+		DefaultTableModel model = (DefaultTableModel) tableStore.getModel();
 
 		// ID aus der Tabelle holen
 		Object idObj = model.getValueAt(row, 0);
@@ -125,34 +129,36 @@ public class WindowCreateMaterial extends JFrame {
 
 		// Zeile aus der Tabelle entfernen
 		model.removeRow(row);
-
 	}
 
-	private void saveMaterial(JTable tableMaterial) throws SQLException {
-		if (tableMaterial.isEditing()) {
-			tableMaterial.getCellEditor().stopCellEditing();
+	private void saveStorage(JTable tableStore) throws SQLException {
+
+		if (tableStore.isEditing()) {
+			tableStore.getCellEditor().stopCellEditing();
 		}
 
-		List<MaterialDto> list = new ArrayList<>();
-		DefaultTableModel model = (DefaultTableModel) tableMaterial.getModel();
+		List<LagerortDto> list = new ArrayList<>();
+		DefaultTableModel model = (DefaultTableModel) tableStore.getModel();
 
-		MaterialRepro materialRepro = new MaterialRepro();
+		LagerortRepro lagerortRepro = new LagerortRepro();
 
 		if (!deletedIds.isEmpty()) {
-			materialRepro.deleteMaterial(deletedIds);
+			lagerortRepro.deleteLagerort(deletedIds);
 		}
 
 		for (int row = 0; row < model.getRowCount(); row++) {
 
 			// Mock
-			materialRepro.modifyMaterial(tableMaterial, row);
+			lagerortRepro.modifyLagerort(tableStore, row);
 
 			Integer id = (Integer) model.getValueAt(row, 0);
-			String bezeichnung = (String) model.getValueAt(row, 1);
-			list.add(new MaterialDto(id, bezeichnung));
+
+			String lagerort = (String) model.getValueAt(row, 1);
+			String rufname = (String) model.getValueAt(row, 2);
+			list.add(new LagerortDto(id, lagerort, rufname));
 
 			System.out.println(id);
-			System.out.println(bezeichnung);
+			System.out.println(lagerort);
 			System.out.println("------");
 
 		}
