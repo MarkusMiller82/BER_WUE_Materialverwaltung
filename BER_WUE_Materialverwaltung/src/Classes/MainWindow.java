@@ -31,7 +31,14 @@ public class MainWindow extends JFrame {
 
 		JButton ButtonChoose = new JButton("Auswahl bestätigen");
 
-		ButtonChoose.addActionListener(e -> HandleButtonChoose());
+		ButtonChoose.addActionListener(e -> {
+			try {
+				HandleButtonChoose();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
 
 		JPanel contentLeft = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		// JPanel contentRight = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -132,7 +139,7 @@ public class MainWindow extends JFrame {
 		CreateMat.setVisible(true);
 	}
 
-	private void HandleButtonChoose() {
+	private void HandleButtonChoose() throws SQLException {
 
 		FahrzeugDto selected = (FahrzeugDto) fahrzeugCombo.getSelectedItem();
 		// String selected = (String) fahrzeugCombo.getSelectedItem();

@@ -4,10 +4,12 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 import java.awt.*;
+import java.sql.SQLException;
+import java.util.List;
 
 public class WindowVehChoose extends JFrame {
 
-	public WindowVehChoose(String vehicle) {
+	public WindowVehChoose(String vehicle) throws SQLException {
 
 		setTitle("Fahrzeugübersicht");
 
@@ -22,10 +24,22 @@ public class WindowVehChoose extends JFrame {
 
 		String[] columnNames = { "Rufname", "Materialbezeichnung", "Lagerort", "Ablaufdatum" };
 		DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+		
+		LagerungRepro lagerungRepro = new LagerungRepro( );
+		
+		List<LagerungDto> listAll = lagerungRepro.findAbgelaufenByRufname(vehicle);
 
-		model.addRow(new Object[] { "RK Wü 71/70", "Verbandspäckchen groß", "Rucksack RTW", "31.01.2026" });
-		model.addRow(new Object[] { "RK Wü 71/70", "Verbandspäckchen klein", "Rucksack RTW", "31.01.2026" });
-		model.addRow(new Object[] { "RK Wü 71/70", "Akrinor", "Rucksack RTW", "31.01.2026" });
+		for (LagerungDto dto : listAll) {
+			model.addRow(new Object[] { dto.getId(), // Integer oder null
+					dto.getRufname(), dto.getMaterialbezeichnung(), dto.getLagerort(), dto.getAblaufdatum() });
+		}
+		
+		/*
+		 * model.addRow(new Object[] { "RK Wü 71/70", "Verbandspäckchen groß",
+		 * "Rucksack RTW", "31.01.2026" }); model.addRow(new Object[] { "RK Wü 71/70",
+		 * "Verbandspäckchen klein", "Rucksack RTW", "31.01.2026" }); model.addRow(new
+		 * Object[] { "RK Wü 71/70", "Akrinor", "Rucksack RTW", "31.01.2026" });
+		 */
 
 		JTable table = new JTable(model);
 		TableStyler.applyHoverEffect(table);
@@ -43,7 +57,18 @@ public class WindowVehChoose extends JFrame {
 		});
 
 
+		JButton maintainVehicleMat = new JButton("Fahrzeugmaterial pflegen");
+		maintainVehicleMat.addActionListener(e -> {
+			try {
+				maintainVehicleMat(vehicle);
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
+		
 		footerPanel.add(startCheck);
+		footerPanel.add(maintainVehicleMat);
 		footerPanel.add(back);
 
 		add(footerPanel, BorderLayout.SOUTH);
@@ -53,12 +78,17 @@ public class WindowVehChoose extends JFrame {
 
 	}
 	
+	private void maintainVehicleMat(String vehicle) throws SQLException {
+
+		WindowmaintainVehicleMat maintain = new WindowmaintainVehicleMat(vehicle);
+		maintain.setVisible(true);
+		
+	}
+
 	private void startCheck(String vehicle) {
 		dispose();
 		WindowStartCheck winCheck = new WindowStartCheck(vehicle);
 		winCheck.setVisible(true);
-		
-		
 		
 	}
 

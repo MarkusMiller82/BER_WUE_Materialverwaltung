@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 public class LagerungDto {
 
-	private final int id;
+	private final Integer id;
 	private final String rufname;
 	private final String Materialbezeichnung;
 	private final String Lagerort;
@@ -13,7 +13,7 @@ public class LagerungDto {
 	private final int AnzahlSoll;
 	private final Date  Ablaufdatum;
 
-	public LagerungDto(int id, String rufname, String Materialbezeichnung, String Lagerort, int Anzahl, int AnzahlSoll, Date Ablaufdatum) {
+	public LagerungDto(Integer id, String rufname, String Materialbezeichnung, String Lagerort, int Anzahl, int AnzahlSoll, Date Ablaufdatum) {
 		this.id = id;
 		this.rufname = rufname;
 		this.Materialbezeichnung = Materialbezeichnung;
@@ -23,7 +23,7 @@ public class LagerungDto {
 		this.Ablaufdatum = Ablaufdatum;
 	}
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
