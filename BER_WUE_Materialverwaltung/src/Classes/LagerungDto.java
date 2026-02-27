@@ -1,6 +1,8 @@
 package Classes;
 
 import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 
 public class LagerungDto {
@@ -37,8 +39,17 @@ public class LagerungDto {
 		return rufname;
 	}
 
-	public Date getAblaufdatum() {
-		return Ablaufdatum;
+	public Date getAblaufdatum() throws ParseException {
+		
+		if (this.Ablaufdatum != null){
+			return Ablaufdatum;
+		}else {
+			SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+            sdf.setLenient(false);
+            java.util.Date parsed = sdf.parse("31.12.9999");
+            return new java.sql.Date(parsed.getTime());
+			 
+		}
 	}
 
 	public String getMaterialbezeichnung() {

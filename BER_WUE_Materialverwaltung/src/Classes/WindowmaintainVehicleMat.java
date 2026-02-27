@@ -20,7 +20,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
 public class WindowmaintainVehicleMat extends JFrame {
-	
+
 	private List<Integer> deletedIds = new ArrayList<>();
 
 	public WindowmaintainVehicleMat(String vehicle) throws SQLException {
@@ -39,18 +39,17 @@ public class WindowmaintainVehicleMat extends JFrame {
 
 		String[] columnNames = { "ID", "Materialbezeichnung", "Lagerort", "Anzahl Soll" };
 		DefaultTableModel model = new DefaultTableModel(columnNames, 0);
-		
+
 		EditableColumnRenderer renderer = new EditableColumnRenderer();
-		
+
 		JTable table = new JTable(model);
 		TableStyler.applyHoverEffect(table);
 		for (int i = 0; i < table.getColumnCount(); i++) {
 			table.getColumnModel().getColumn(i).setCellRenderer(renderer);
 		}
 		JScrollPane scrollPane = new JScrollPane(table);
-		
-		table.removeColumn(table.getColumnModel().getColumn(0)); // ID verstecken
 
+		table.removeColumn(table.getColumnModel().getColumn(0)); // ID verstecken
 
 		LagerungRepro lagerungRepro = new LagerungRepro();
 
@@ -60,12 +59,12 @@ public class WindowmaintainVehicleMat extends JFrame {
 			model.addRow(new Object[] { dto.getId(), // Integer oder null
 					dto.getMaterialbezeichnung(), dto.getLagerort(), dto.getAnzahlSoll() });
 		}
-		
+
 		MaterialRepro materialrepro = new MaterialRepro();
 
 		List<MaterialDto> listAllMaterial = materialrepro.findAll();
 		JComboBox<String> comboMat = new JComboBox<>();
-		
+
 		for (MaterialDto dto : listAllMaterial) {
 			String s = dto.getMaterialbezeichnung();
 			comboMat.addItem(s);
@@ -78,7 +77,7 @@ public class WindowmaintainVehicleMat extends JFrame {
 
 		List<LagerortDto> listAllStorage = Lagerortrepro.findAll(vehicle);
 		JComboBox<String> comboStore = new JComboBox<>();
-		
+
 		for (LagerortDto dto : listAllStorage) {
 			String s = dto.getLagerort();
 			comboStore.addItem(s);
@@ -93,25 +92,26 @@ public class WindowmaintainVehicleMat extends JFrame {
 
 		JButton back = new JButton("Schließen");
 		back.addActionListener(e -> {
-			dispose(); 
+			dispose();
 		});
 
 		JButton save = new JButton("Speichern");
-		back.addActionListener(e -> {
+		save.addActionListener(e -> {
 			try {
-				save(table);
+				save(table, vehicle);
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
-			} 
+			}
 		});
 		JButton addButton = new JButton("Neue Zeile");
 
 		addButton.addActionListener(e -> {
+				
 			model.addRow(new Object[] { null, // ID (unsichtbar)
-					"", "", ""  });
+					"", "", 0 });
 		});
-		
+
 		JButton deleteButton = new JButton("Löschen");
 		deleteButton.addActionListener(e -> {
 			try {
@@ -122,7 +122,6 @@ public class WindowmaintainVehicleMat extends JFrame {
 			}
 		});
 
-		
 		footerPanel.add(addButton);
 		footerPanel.add(deleteButton);
 		footerPanel.add(save);
@@ -156,14 +155,13 @@ public class WindowmaintainVehicleMat extends JFrame {
 		// Zeile aus der Tabelle entfernen
 		model.removeRow(row);
 	}
-	
-	private void save(JTable table) throws SQLException {
+
+	private void save(JTable table, String vehicle) throws SQLException {
 
 		if (table.isEditing()) {
 			table.getCellEditor().stopCellEditing();
 		}
 
-		List<LagerungDto> list = new ArrayList<>();
 		DefaultTableModel model = (DefaultTableModel) table.getModel();
 
 		LagerungRepro lagerungepro = new LagerungRepro();
@@ -174,9 +172,9 @@ public class WindowmaintainVehicleMat extends JFrame {
 
 		for (int row = 0; row < model.getRowCount(); row++) {
 
-			/*
-			 * // Mock lagerungepro.modifyStorageSet(table, row);
-			 * 
+
+			lagerungepro.modifyStorageSet(table, row, vehicle);
+			/* 
 			 * Integer id = (Integer) model.getValueAt(row, 0); String bezeichnung =
 			 * (String) model.getValueAt(row, 2); String typ = (String)
 			 * model.getValueAt(row, 3); String rufname = (String) model.getValueAt(row, 1);

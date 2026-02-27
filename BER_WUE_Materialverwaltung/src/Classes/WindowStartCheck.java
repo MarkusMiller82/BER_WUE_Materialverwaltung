@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +17,7 @@ import javax.swing.table.DefaultTableModel;
 
 public class WindowStartCheck extends JFrame {
 
-	public WindowStartCheck(String vehicle) {
+	public WindowStartCheck(String vehicle) throws SQLException, ParseException {
 
 		String title = "Fahzeugmaterialcheck" + vehicle;
 		setTitle(title);
@@ -38,13 +39,24 @@ public class WindowStartCheck extends JFrame {
 			}
 		};
 
-		// mock
-		model.addRow(
-				new Object[] { 1 , "RK Wü 71/70", "Verbandspäckchen groß", "Rucksack RTW", 10, 5, Date.valueOf("2026-02-21") });
-		model.addRow(
-				new Object[] { 2 , "RK Wü 71/70", "Verbandspäckchen klein", "Rucksack RTW", 10, 3, Date.valueOf("2026-02-21") });
-		model.addRow(new Object[] { 3 , "RK Wü 71/70", "Akrinor", "Rucksack RTW", 3, 0, Date.valueOf("2026-02-21") });
+		LagerungRepro lagerungRepro = new LagerungRepro();
+		List<LagerungDto> listAll = lagerungRepro.findByRufname(vehicle);
 
+		for (LagerungDto dto : listAll) {
+			model.addRow(new Object[] { dto.getId(), // Integer oder null
+					dto.getRufname(), dto.getMaterialbezeichnung(), dto.getLagerort(), dto.getAnzahlSoll(),
+					dto.getAnzahl(), dto.getAblaufdatum() });
+		}
+
+		// mock
+		/*
+		 * model.addRow( new Object[] { 1 , "RK Wü 71/70", "Verbandspäckchen groß",
+		 * "Rucksack RTW", 10, 5, Date.valueOf("2026-02-21") }); model.addRow( new
+		 * Object[] { 2 , "RK Wü 71/70", "Verbandspäckchen klein", "Rucksack RTW", 10,
+		 * 3, Date.valueOf("2026-02-21") }); model.addRow(new Object[] { 3 ,
+		 * "RK Wü 71/70", "Akrinor", "Rucksack RTW", 3, 0, Date.valueOf("2026-02-21")
+		 * });
+		 */
 		EditableColumnRenderer renderer = new EditableColumnRenderer();
 
 		JTable tableCheck = new JTable(model);
@@ -52,11 +64,11 @@ public class WindowStartCheck extends JFrame {
 		for (int i = 0; i < tableCheck.getColumnCount(); i++) {
 			tableCheck.getColumnModel().getColumn(i).setCellRenderer(renderer);
 		}
-		
-		tableCheck.getColumnModel().getColumn(0).setMinWidth(0);
-		tableCheck.getColumnModel().getColumn(0).setMaxWidth(0);
-		tableCheck.getColumnModel().getColumn(0).setWidth(0);
-		tableCheck.getColumnModel().getColumn(0).setPreferredWidth(0);
+
+		tableCheck.removeColumn(tableCheck.getColumnModel().getColumn(0)); // ID verstecken
+		tableCheck.getColumnModel().getColumn(5).setCellRenderer(new DateRenderer());
+		tableCheck.getColumnModel().getColumn(5).setCellEditor(new DatePickerCellEditor());
+
 
 		JScrollPane scrollPane = new JScrollPane(tableCheck);
 		add(scrollPane, BorderLayout.CENTER);
@@ -66,7 +78,7 @@ public class WindowStartCheck extends JFrame {
 		JButton startCheck = new JButton("Speichern");
 		startCheck.addActionListener(e -> {
 			try {
-				saveCheck(tableCheck);
+				saveCheck(tableCheck, vehicle);
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			}
@@ -85,8 +97,7 @@ public class WindowStartCheck extends JFrame {
 
 	}
 
-	private void saveCheck(JTable tableCheck) throws SQLException {
-		List<LagerungDto> list = new ArrayList<>();
+	private void saveCheck(JTable tableCheck, String vehicle) throws SQLException {
 		DefaultTableModel model = (DefaultTableModel) tableCheck.getModel();
 
 		LagerungRepro lagerungRepro = new LagerungRepro();
@@ -94,24 +105,10 @@ public class WindowStartCheck extends JFrame {
 		for (int row = 0; row < model.getRowCount(); row++) {
 
 			// Mock
-			// lagerungRepro.updateLagerungFromTableRow(tableCheck, row);
-
-			int id = (int) model.getValueAt(row, 0);
-			String rufname = (String) model.getValueAt(row, 1);
-			String bezeichnung = (String) model.getValueAt(row, 2);
-			String lagerort = (String) model.getValueAt(row, 3);
-			int anzahlSoll = (int) model.getValueAt(row, 4);
-			int anzahl = (int) model.getValueAt(row, 5);
-			Date ablaufdatum = (Date) model.getValueAt(row, 6);
-
-			list.add(new LagerungDto(id, rufname, bezeichnung, lagerort, anzahl, anzahlSoll, ablaufdatum));
-
-			System.out.println(anzahl);
-			System.out.println(ablaufdatum);
-			System.out.println("------");
+			lagerungRepro.updateStorageSet(tableCheck, row, vehicle);
 
 		}
-		
+
 		dispose();
 
 	}

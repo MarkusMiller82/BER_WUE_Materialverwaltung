@@ -5,11 +5,12 @@ import javax.swing.table.DefaultTableModel;
 
 import java.awt.*;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.List;
 
 public class WindowVehChoose extends JFrame {
 
-	public WindowVehChoose(String vehicle) throws SQLException {
+	public WindowVehChoose(String vehicle) throws SQLException, ParseException {
 
 		setTitle("Fahrzeugübersicht");
 
@@ -22,7 +23,7 @@ public class WindowVehChoose extends JFrame {
 		vehicleLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		add(vehicleLabel, BorderLayout.NORTH);
 
-		String[] columnNames = { "Rufname", "Materialbezeichnung", "Lagerort", "Ablaufdatum" };
+		String[] columnNames = { "ID", "Rufname", "Materialbezeichnung", "Lagerort", "Ablaufdatum" };
 		DefaultTableModel model = new DefaultTableModel(columnNames, 0);
 		
 		LagerungRepro lagerungRepro = new LagerungRepro( );
@@ -34,6 +35,7 @@ public class WindowVehChoose extends JFrame {
 					dto.getRufname(), dto.getMaterialbezeichnung(), dto.getLagerort(), dto.getAblaufdatum() });
 		}
 		
+		
 		/*
 		 * model.addRow(new Object[] { "RK Wü 71/70", "Verbandspäckchen groß",
 		 * "Rucksack RTW", "31.01.2026" }); model.addRow(new Object[] { "RK Wü 71/70",
@@ -44,31 +46,30 @@ public class WindowVehChoose extends JFrame {
 		JTable table = new JTable(model);
 		TableStyler.applyHoverEffect(table);
 		JScrollPane scrollPane = new JScrollPane(table);
+		
+		table.removeColumn(table.getColumnModel().getColumn(0)); // ID verstecken
+		table.getColumnModel().getColumn(3).setCellRenderer(new DateRenderer());
 
 		add(scrollPane, BorderLayout.CENTER);
 
 		JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
 		JButton startCheck = new JButton("Check Starten");
-		startCheck.addActionListener(e -> startCheck(vehicle));
+		startCheck.addActionListener(e -> {
+			try {
+				startCheck(vehicle);
+			} catch (SQLException | ParseException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
 		JButton back = new JButton("Schließen");
 		back.addActionListener(e -> {
 		    dispose();   // schließt das aktuelle Fenster
 		});
 
-
-		JButton maintainVehicleMat = new JButton("Fahrzeugmaterial pflegen");
-		maintainVehicleMat.addActionListener(e -> {
-			try {
-				maintainVehicleMat(vehicle);
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		});
 		
 		footerPanel.add(startCheck);
-		footerPanel.add(maintainVehicleMat);
 		footerPanel.add(back);
 
 		add(footerPanel, BorderLayout.SOUTH);
@@ -78,14 +79,8 @@ public class WindowVehChoose extends JFrame {
 
 	}
 	
-	private void maintainVehicleMat(String vehicle) throws SQLException {
 
-		WindowmaintainVehicleMat maintain = new WindowmaintainVehicleMat(vehicle);
-		maintain.setVisible(true);
-		
-	}
-
-	private void startCheck(String vehicle) {
+	private void startCheck(String vehicle) throws SQLException, ParseException {
 		dispose();
 		WindowStartCheck winCheck = new WindowStartCheck(vehicle);
 		winCheck.setVisible(true);
