@@ -1,6 +1,7 @@
 package Classes;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -19,13 +20,13 @@ public class WindowStartCheck extends JFrame {
 
 	public WindowStartCheck(String vehicle) throws SQLException, ParseException {
 
-		String title = "Fahzeugmaterialcheck" + vehicle;
+		String title = "Fahzeugmaterialcheck  " + vehicle;
 		setTitle(title);
 
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		// Größe des Fensters
-		setSize(1000, 600);
+		setSize(1200, 800);
 
 		setLayout(new BorderLayout());
 
@@ -69,6 +70,9 @@ public class WindowStartCheck extends JFrame {
 		tableCheck.getColumnModel().getColumn(5).setCellRenderer(new DateRenderer());
 		tableCheck.getColumnModel().getColumn(5).setCellEditor(new DatePickerCellEditor());
 
+		TableStyler.applyCenterAlignment(tableCheck);
+		tableCheck.setShowGrid(true);                 
+		tableCheck.setGridColor(Color.LIGHT_GRAY);
 
 		JScrollPane scrollPane = new JScrollPane(tableCheck);
 		add(scrollPane, BorderLayout.CENTER);

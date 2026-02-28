@@ -1,6 +1,7 @@
 package Classes;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -50,6 +51,10 @@ public class WindowmaintainVehicleMat extends JFrame {
 		JScrollPane scrollPane = new JScrollPane(table);
 
 		table.removeColumn(table.getColumnModel().getColumn(0)); // ID verstecken
+		
+		TableStyler.applyCenterAlignment(table);
+		table.setShowGrid(true);                 
+		table.setGridColor(Color.LIGHT_GRAY);
 
 		LagerungRepro lagerungRepro = new LagerungRepro();
 
