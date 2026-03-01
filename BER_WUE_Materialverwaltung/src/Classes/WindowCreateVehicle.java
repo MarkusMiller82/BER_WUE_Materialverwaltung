@@ -1,6 +1,7 @@
 package Classes;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -51,6 +52,10 @@ public class WindowCreateVehicle extends JFrame {
 		tableVehicle.getColumnModel().getColumn(0).setMaxWidth(0);
 		tableVehicle.getColumnModel().getColumn(0).setWidth(0);
 		tableVehicle.getColumnModel().getColumn(0).setPreferredWidth(0);
+		
+		TableStyler.applyCenterAlignment(tableVehicle);
+		tableVehicle.setShowGrid(true);                 
+		tableVehicle.setGridColor(Color.LIGHT_GRAY);
 
 		JButton addButton = new JButton("Neue Zeile");
 

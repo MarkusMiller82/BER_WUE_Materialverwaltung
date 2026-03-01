@@ -1,6 +1,7 @@
 package Classes;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -60,7 +61,12 @@ public class WindowCreateMaterial extends JFrame {
 		tableMaterial.getColumnModel().getColumn(0).setMaxWidth(0);
 		tableMaterial.getColumnModel().getColumn(0).setWidth(0);
 		tableMaterial.getColumnModel().getColumn(0).setPreferredWidth(0);
-
+		
+		TableStyler.applyCenterAlignment(tableMaterial);
+		tableMaterial.setShowGrid(true);                 
+		tableMaterial.setGridColor(Color.LIGHT_GRAY);
+		
+		
 		JButton addButton = new JButton("Neue Zeile");
 
 		addButton.addActionListener(e -> {

@@ -3,6 +3,7 @@ package Classes;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.List;
 
 public class MainWindow extends JFrame {
@@ -34,7 +35,7 @@ public class MainWindow extends JFrame {
 		ButtonChoose.addActionListener(e -> {
 			try {
 				HandleButtonChoose();
-			} catch (SQLException e1) {
+			} catch (SQLException | ParseException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -82,8 +83,13 @@ public class MainWindow extends JFrame {
 		});
 
 		JButton createCheckPoints = new JButton("Stammsatz für Check erzeugen");
-		createVehicle.addActionListener(e -> {
-			createCheckPoints();
+		createCheckPoints.addActionListener(e -> {
+			try {
+				createCheckPoints();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		});
 
 		footerPanel.add(createMaterial);
@@ -102,15 +108,12 @@ public class MainWindow extends JFrame {
 
 	}
 
-	private void createCheckPoints() {
+	private void createCheckPoints() throws SQLException {
 		FahrzeugDto selected = (FahrzeugDto) fahrzeugCombo.getSelectedItem();
 
-		if (selected.getRufname() == null || selected.getRufname().isBlank()) {
-			JOptionPane.showMessageDialog(null, "Der Rufname darf nicht leer sein.", "Eingabefehler",
-					JOptionPane.ERROR_MESSAGE);
-		} else {
-			// View Rufen dafür
-		}
+		WindowmaintainVehicleMat maintain = new WindowmaintainVehicleMat(selected.getRufname());
+		maintain.setVisible(true);
+		
 
 	}
 
@@ -139,7 +142,7 @@ public class MainWindow extends JFrame {
 		CreateMat.setVisible(true);
 	}
 
-	private void HandleButtonChoose() throws SQLException {
+	private void HandleButtonChoose() throws SQLException, ParseException {
 
 		FahrzeugDto selected = (FahrzeugDto) fahrzeugCombo.getSelectedItem();
 		// String selected = (String) fahrzeugCombo.getSelectedItem();

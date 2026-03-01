@@ -1,6 +1,7 @@
 package Classes;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -58,6 +59,10 @@ public class WindowCreateStorage extends JFrame {
 		tableStorage.getColumnModel().getColumn(0).setMaxWidth(0);
 		tableStorage.getColumnModel().getColumn(0).setWidth(0);
 		tableStorage.getColumnModel().getColumn(0).setPreferredWidth(0);
+		
+		TableStyler.applyCenterAlignment(tableStorage);
+		tableStorage.setShowGrid(true);                 
+		tableStorage.setGridColor(Color.LIGHT_GRAY);
 
 		JButton addButton = new JButton("Neue Zeile");
 
